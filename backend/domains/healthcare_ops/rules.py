@@ -1,0 +1,1 @@
+"""Healthcare validation rules placeholder."""

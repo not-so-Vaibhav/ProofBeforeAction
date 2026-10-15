@@ -1,0 +1,5 @@
+# Healthcare Operations domain model placeholder
+version: "1.0"
+departments: []
+wards: []
+staff_roles: []
