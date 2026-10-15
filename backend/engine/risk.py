@@ -12,7 +12,7 @@ def calculate_risk(
     node_criticalities: dict[str, int] | None = None,
 ) -> RiskResult:
     """
-    Computes transparent risk heuristic score R = 0.30*S + 0.25*D + 0.25*V + 0.10*I + 0.10*U.
+    Computes transparent risk heuristic score R using weights from config (S, D, V, I, U).
     Clamped to 0..100.
 
     - S (Impact Severity): max criticality among affected nodes (0 if none)

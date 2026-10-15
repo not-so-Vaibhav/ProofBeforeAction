@@ -20,9 +20,9 @@ def decide(
     1. Critical rule FAILED -> BLOCK (regardless of score).
     2. No validations ran -> HUMAN_REVIEW (reason: 'no checks ran').
     3. Incomplete evidence (any uncovered entry or critical check NOT_RUN) -> HUMAN_REVIEW.
-    4. Score >= 70 -> BLOCK.
-    5. Any validation FAILED or score >= 30 -> HUMAN_REVIEW.
-    6. Passed validation with score < 30 -> ALLOW.
+    4. Score >= THRESHOLD_BLOCK -> BLOCK.
+    5. Any validation FAILED or score >= THRESHOLD_REVIEW -> HUMAN_REVIEW.
+    6. Passed validation with score < THRESHOLD_REVIEW -> ALLOW.
     """
     # 1. Critical rule failed -> BLOCK
     critical_failed = [v for v in validations if v.critical_rule and v.status == CheckStatus.FAILED]
@@ -49,14 +49,14 @@ def decide(
             reasons.extend(f"Uncovered dependency: {item}" for item in impact.uncovered)
         return DecisionResult(decision=Decision.HUMAN_REVIEW, reasons=reasons)
 
-    # 4. Score >= 70 -> BLOCK
+    # 4. Score >= THRESHOLD_BLOCK -> BLOCK
     if score >= THRESHOLD_BLOCK:
         return DecisionResult(
             decision=Decision.BLOCK,
             reasons=[f"Risk score {score:.1f} exceeds block threshold ({THRESHOLD_BLOCK})"],
         )
 
-    # 5. Non-critical failures or score >= 30 -> HUMAN_REVIEW
+    # 5. Non-critical failures or score >= THRESHOLD_REVIEW -> HUMAN_REVIEW
     failed_checks = [v for v in validations if v.status == CheckStatus.FAILED]
     if failed_checks or score >= THRESHOLD_REVIEW:
         reasons = []
