@@ -131,7 +131,7 @@ Adapters live in `domains/coding_data/` and `domains/healthcare_ops/`. A registr
 
 **Edge relationships.** `reads`, `writes`, `references`, `depends_on`, `calls`, `exposes`, `staffs`, `schedules`, `feeds`, `reports_on`.
 
-**Direction.** Edges point from the *provider* to the *consumer* (changing the source can break the target). Impact analysis is a BFS from entry nodes along outgoing edges. Cap depth at 6 and node count at 500.
+**Direction.** Edges point from the *provider* to the *consumer* (changing the source can break the target). Impact analysis is a BFS from entry nodes along outgoing edges. Cap depth at 6 and node count at 500. If the depth or node cap cuts off nodes with unvisited successors, add `truncated:depth_cap` or `truncated:node_cap` to `uncovered` and count it in coverage.
 
 **Path recording.** Use `nx.all_simple_paths` with a cutoff, limited to 3 paths per target, so reports stay readable.
 
