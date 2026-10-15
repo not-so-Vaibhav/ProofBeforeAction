@@ -226,17 +226,35 @@ The score is a heuristic, not a probability. The report must say so.
 ```python
 def decide(score, validations, impact, findings):
     critical_failed = any(v.critical_rule and v.status == FAILED for v in validations)
+    if critical_failed:
+        return BLOCK, ["Critical rule failed: ..."]
+
+    if not validations:
+        return HUMAN_REVIEW, ["no checks ran"]
+
     critical_not_run = any(v.critical_rule and v.status == NOT_RUN for v in validations)
-    evidence_complete = impact.coverage >= 0.95 and not critical_not_run
+    evidence_complete = not impact.uncovered and not critical_not_run
+    if not evidence_complete:
+        return HUMAN_REVIEW, ["Incomplete evidence: uncovered dependencies or critical check not run"]
+
+    if score >= 70:
+        return BLOCK, ["Risk score exceeds block threshold"]
+
     any_failed = any(v.status == FAILED for v in validations)
-    if critical_failed: return BLOCK
-    if not evidence_complete: return HUMAN_REVIEW
-    if score >= 70: return BLOCK
-    if any_failed or score >= 30: return HUMAN_REVIEW
-    return ALLOW
+    if any_failed or score >= 30:
+        return HUMAN_REVIEW, ["Validation failures detected or risk score exceeds review threshold"]
+
+    has_passed = any(v.status == PASSED for v in validations)
+    if has_passed:
+        return ALLOW, ["All checks passed and risk score is within acceptable limits"]
+
+    return HUMAN_REVIEW, ["no checks ran"]
 ```
 
-Each branch appends a human-readable reason. Unit tests must cover every branch.
+Notes:
+- `evidence_complete` requires `not impact.uncovered` and `not critical_not_run`. Any uncovered dependency (including `truncated:*` and `unknown_entry:*` markers) forces `HUMAN_REVIEW`. Coverage remains a reported metric only.
+- If no validations exist at all (nothing was verified), the decision is `HUMAN_REVIEW` with the reason "no checks ran". `ALLOW` requires at least one check that ran and passed.
+- Each branch appends a human-readable reason naming the rule that fired. Unit tests must cover every branch.
 
 ## 11. Self-verified remediation
 
